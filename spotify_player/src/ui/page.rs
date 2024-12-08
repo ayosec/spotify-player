@@ -894,6 +894,7 @@ fn render_track_table(
                 Cell::from(t.display_name()),
                 Cell::from(t.artists_info()),
                 Cell::from(t.album_info()),
+                Cell::from(t.added_at()),
                 Cell::from(format!(
                     "{}:{:02}",
                     t.duration.as_secs() / 60,
@@ -911,6 +912,7 @@ fn render_track_table(
             Constraint::Fill(4),
             Constraint::Fill(3),
             Constraint::Fill(5),
+            Constraint::Fill(2),
             Constraint::Fill(1),
         ],
     )
@@ -921,6 +923,7 @@ fn render_track_table(
             Cell::from("Title"),
             Cell::from("Artists"),
             Cell::from("Album"),
+            Cell::from("Added"),
             Cell::from("Duration"),
         ])
         .style(ui.theme.table_header()),

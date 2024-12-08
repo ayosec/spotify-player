@@ -728,7 +728,7 @@ impl Client {
         let tracks = self.all_paging_items(first_page, &market_query()).await?;
         Ok(tracks
             .into_iter()
-            .filter_map(|t| Track::try_from_full_track(t.track))
+            .filter_map(|t| Track::try_from_full_track(t.track, Some(t.added_at)))
             .collect())
     }
 
@@ -742,7 +742,9 @@ impl Client {
         let mut tracks = Vec::<Track>::new();
         for history in play_histories {
             if !tracks.iter().any(|t| t.name == history.track.name) {
-                if let Some(track) = Track::try_from_full_track(history.track) {
+                if let Some(track) =
+                    Track::try_from_full_track(history.track, Some(history.played_at))
+                {
                     tracks.push(track);
                 }
             }
@@ -759,7 +761,7 @@ impl Client {
         let tracks = self.all_paging_items(first_page, &Query::new()).await?;
         Ok(tracks
             .into_iter()
-            .filter_map(Track::try_from_full_track)
+            .filter_map(|t| Track::try_from_full_track(t, None))
             .collect())
     }
 
@@ -957,7 +959,7 @@ impl Client {
             .await?;
         let tracks = tracks
             .into_iter()
-            .filter_map(Track::try_from_full_track)
+            .filter_map(|t| Track::try_from_full_track(t, None))
             .collect();
 
         Ok(tracks)
@@ -986,7 +988,7 @@ impl Client {
                 rspotify::model::SearchResult::Tracks(p) => p
                     .items
                     .into_iter()
-                    .filter_map(Track::try_from_full_track)
+                    .filter_map(|t| Track::try_from_full_track(t, None))
                     .collect(),
                 _ => anyhow::bail!("expect a track search result"),
             },
@@ -1279,6 +1281,7 @@ impl Client {
             self.spotify
                 .track(track_id, Some(rspotify::model::Market::FromToken))
                 .await?,
+            None,
         )
         .context("convert FullTrack into Track")
     }
@@ -1309,7 +1312,7 @@ impl Client {
             .into_iter()
             .filter_map(|item| match item.track {
                 Some(rspotify::model::PlayableItem::Track(track)) => {
-                    Track::try_from_full_track(track)
+                    Track::try_from_full_track(track, item.added_at)
                 }
                 _ => None,
             })
@@ -1372,7 +1375,7 @@ impl Client {
             .context("get artist's top tracks")?;
         let top_tracks = top_tracks
             .into_iter()
-            .filter_map(Track::try_from_full_track)
+            .filter_map(|t| Track::try_from_full_track(t, None))
             .collect::<Vec<_>>();
 
         let related_artists = self

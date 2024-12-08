@@ -339,7 +339,10 @@ impl Track {
     }
 
     /// tries to convert from a `rspotify::model::FullTrack` into `Track`
-    pub fn try_from_full_track(track: rspotify::model::FullTrack) -> Option<Self> {
+    pub fn try_from_full_track(
+        track: rspotify::model::FullTrack,
+        added_at: Option<chrono::DateTime<chrono::Utc>>,
+    ) -> Option<Self> {
         if track.is_playable.unwrap_or(true) {
             let id = match track.linked_from {
                 Some(d) => d.id?,
@@ -352,11 +355,26 @@ impl Track {
                 album: Album::try_from_simplified_album(track.album),
                 duration: track.duration.to_std().expect("valid chrono duration"),
                 explicit: track.explicit,
-                added_at: 0,
+                added_at: added_at
+                    .and_then(|t| u64::try_from(t.timestamp()).ok())
+                    .unwrap_or(0),
             })
         } else {
             None
         }
+    }
+
+    pub fn added_at(&self) -> String {
+        if self.added_at == 0 {
+            return String::new();
+        }
+
+        let Some(dt) = chrono::DateTime::<chrono::Utc>::from_timestamp(self.added_at as i64, 0)
+        else {
+            return String::new();
+        };
+
+        dt.format("%F %H:%M").to_string()
     }
 }
 

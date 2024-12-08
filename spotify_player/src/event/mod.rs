@@ -489,7 +489,7 @@ fn handle_global_action(
         if let Some(currently_playing) = player.currently_playing() {
             match currently_playing {
                 rspotify::model::PlayableItem::Track(track) => {
-                    if let Some(track) = Track::try_from_full_track(track.clone()) {
+                    if let Some(track) = Track::try_from_full_track(track.clone(), None) {
                         return handle_action_in_context(
                             action,
                             ActionContext::Track(track),
@@ -595,7 +595,7 @@ fn handle_global_command(
             if let Some(currently_playing) = state.player.read().currently_playing() {
                 match currently_playing {
                     rspotify::model::PlayableItem::Track(track) => {
-                        if let Some(track) = Track::try_from_full_track(track.clone()) {
+                        if let Some(track) = Track::try_from_full_track(track.clone(), None) {
                             let data = state.data.read();
                             let actions = command::construct_track_actions(&track, &data);
                             ui.popup = Some(PopupState::ActionList(
