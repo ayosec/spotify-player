@@ -57,20 +57,20 @@ pub fn render_search_page(
 
     // track/album/artist/playlist/show/episode search results layout
     let chunks = match ui.orientation {
-        // 1x6
+        // 1x4
         Orientation::Vertical => {
             let constraints = if focus_state == SearchFocusState::Input {
-                [Constraint::Ratio(1, 6); 6]
+                [Constraint::Ratio(1, 4); 4]
             } else {
-                let mut constraints = [Constraint::Percentage(15); 6];
+                let mut constraints = [Constraint::Percentage(15); 4];
                 constraints[focus_state as usize - 1] = Constraint::Percentage(25);
                 constraints
             };
 
             Layout::vertical(constraints).split(rect)
         }
-        // 2x3
-        Orientation::Horizontal => Layout::vertical([Constraint::Ratio(1, 3); 3])
+        // 2x2
+        Orientation::Horizontal => Layout::vertical([Constraint::Ratio(1, 2); 2])
             .split(rect)
             .iter()
             .flat_map(|rect| {
@@ -107,15 +107,6 @@ pub fn render_search_page(
     );
     let playlist_rect =
         construct_and_render_block("Playlists", &ui.theme, Borders::TOP, frame, chunks[3]);
-    let show_rect = construct_and_render_block(
-        "Shows",
-        &ui.theme,
-        Borders::TOP | Borders::RIGHT,
-        frame,
-        chunks[4],
-    );
-    let episode_rect =
-        construct_and_render_block("Episodes", &ui.theme, Borders::TOP, frame, chunks[5]);
 
     fn search_items<T: Display>(items: &[T]) -> Vec<(String, bool)> {
         items.iter().map(|i| (i.to_string(), false)).collect()
@@ -162,25 +153,6 @@ pub fn render_search_page(
         utils::construct_list_widget(&ui.theme, playlist_items, is_active)
     };
 
-    let (show_list, n_shows) = {
-        let show_items = search_results
-            .map(|s| search_items(&s.shows))
-            .unwrap_or_default();
-        let is_active = is_active && focus_state == SearchFocusState::Shows;
-
-        utils::construct_list_widget(&ui.theme, show_items, is_active)
-    };
-
-    let (episode_list, n_episodes) = {
-        let episode_items = search_results
-            .map(|s| search_items(&s.episodes))
-            .unwrap_or_default();
-
-        let is_active = is_active && focus_state == SearchFocusState::Episodes;
-
-        utils::construct_list_widget(&ui.theme, episode_items, is_active)
-    };
-
     // 4. Render the page's widgets
     // Render the query input box
     frame.render_widget(
@@ -223,20 +195,6 @@ pub fn render_search_page(
         playlist_rect,
         n_playlists,
         &mut page_state.playlist_list,
-    );
-    utils::render_list_window(
-        frame,
-        show_list,
-        show_rect,
-        n_shows,
-        &mut page_state.show_list,
-    );
-    utils::render_list_window(
-        frame,
-        episode_list,
-        episode_rect,
-        n_episodes,
-        &mut page_state.episode_list,
     );
 }
 
